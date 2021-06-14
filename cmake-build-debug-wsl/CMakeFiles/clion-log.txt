@@ -1,0 +1,6 @@
+/home/josh/.local/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" "/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3"
+CMake Error at CMakeLists.txt:1 (cmake_minimum_required):
+  CMake 3.19 or higher is required.  You are running version 3.18.0
+
+
+-- Configuring incomplete, errors occurred!
