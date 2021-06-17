@@ -4,8 +4,8 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/server.cpp" "/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/cmake-build-debug-wsl/CMakeFiles/OS_Wet_HW3.dir/server.cpp.o"
-  "/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/ttftps.cpp" "/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/cmake-build-debug-wsl/CMakeFiles/OS_Wet_HW3.dir/ttftps.cpp.o"
+  "D:/Technion/Operating Systems Wet Homework/OS-Wet-HW3/server.cpp" "D:/Technion/Operating Systems Wet Homework/OS-Wet-HW3/cmake-build-debug/CMakeFiles/OS_Wet_HW3.dir/server.cpp.obj"
+  "D:/Technion/Operating Systems Wet Homework/OS-Wet-HW3/ttftps.cpp" "D:/Technion/Operating Systems Wet Homework/OS-Wet-HW3/cmake-build-debug/CMakeFiles/OS_Wet_HW3.dir/ttftps.cpp.obj"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

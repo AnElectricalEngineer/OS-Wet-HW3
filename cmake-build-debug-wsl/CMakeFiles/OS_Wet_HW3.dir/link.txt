@@ -1,1 +1,1 @@
-/usr/bin/c++ -g CMakeFiles/OS_Wet_HW3.dir/main.cpp.o -o OS_Wet_HW3 
+/usr/bin/c++ -g CMakeFiles/OS_Wet_HW3.dir/ttftps.cpp.o CMakeFiles/OS_Wet_HW3.dir/server.cpp.o -o OS_Wet_HW3 

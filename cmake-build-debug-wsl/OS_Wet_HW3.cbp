@@ -82,7 +82,16 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/main.cpp">
+		<Unit filename="/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/server.cpp">
+			<Option target="OS_Wet_HW3"/>
+		</Unit>
+		<Unit filename="/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/server.h">
+			<Option target="OS_Wet_HW3"/>
+		</Unit>
+		<Unit filename="/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/ttftps.cpp">
+			<Option target="OS_Wet_HW3"/>
+		</Unit>
+		<Unit filename="/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/ttftps.h">
 			<Option target="OS_Wet_HW3"/>
 		</Unit>
 		<Unit filename="/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/CMakeLists.txt">

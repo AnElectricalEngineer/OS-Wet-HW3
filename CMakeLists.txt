@@ -3,4 +3,4 @@ project(OS_Wet_HW3)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(OS_Wet_HW3 main.cpp)
+add_executable(OS_Wet_HW3 ttftps.cpp ttftps.h server.cpp server.h)

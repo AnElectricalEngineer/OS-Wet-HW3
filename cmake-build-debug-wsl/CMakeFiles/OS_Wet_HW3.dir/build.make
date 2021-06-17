@@ -76,30 +76,45 @@ include CMakeFiles/OS_Wet_HW3.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/OS_Wet_HW3.dir/flags.make
 
-CMakeFiles/OS_Wet_HW3.dir/main.cpp.o: CMakeFiles/OS_Wet_HW3.dir/flags.make
-CMakeFiles/OS_Wet_HW3.dir/main.cpp.o: ../main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/cmake-build-debug-wsl/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/OS_Wet_HW3.dir/main.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/OS_Wet_HW3.dir/main.cpp.o -c "/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/main.cpp"
+CMakeFiles/OS_Wet_HW3.dir/ttftps.cpp.o: CMakeFiles/OS_Wet_HW3.dir/flags.make
+CMakeFiles/OS_Wet_HW3.dir/ttftps.cpp.o: ../ttftps.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/cmake-build-debug-wsl/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/OS_Wet_HW3.dir/ttftps.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/OS_Wet_HW3.dir/ttftps.cpp.o -c "/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/ttftps.cpp"
 
-CMakeFiles/OS_Wet_HW3.dir/main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/OS_Wet_HW3.dir/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/main.cpp" > CMakeFiles/OS_Wet_HW3.dir/main.cpp.i
+CMakeFiles/OS_Wet_HW3.dir/ttftps.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/OS_Wet_HW3.dir/ttftps.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/ttftps.cpp" > CMakeFiles/OS_Wet_HW3.dir/ttftps.cpp.i
 
-CMakeFiles/OS_Wet_HW3.dir/main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/OS_Wet_HW3.dir/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/main.cpp" -o CMakeFiles/OS_Wet_HW3.dir/main.cpp.s
+CMakeFiles/OS_Wet_HW3.dir/ttftps.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/OS_Wet_HW3.dir/ttftps.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/ttftps.cpp" -o CMakeFiles/OS_Wet_HW3.dir/ttftps.cpp.s
+
+CMakeFiles/OS_Wet_HW3.dir/server.cpp.o: CMakeFiles/OS_Wet_HW3.dir/flags.make
+CMakeFiles/OS_Wet_HW3.dir/server.cpp.o: ../server.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/cmake-build-debug-wsl/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/OS_Wet_HW3.dir/server.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/OS_Wet_HW3.dir/server.cpp.o -c "/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/server.cpp"
+
+CMakeFiles/OS_Wet_HW3.dir/server.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/OS_Wet_HW3.dir/server.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/server.cpp" > CMakeFiles/OS_Wet_HW3.dir/server.cpp.i
+
+CMakeFiles/OS_Wet_HW3.dir/server.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/OS_Wet_HW3.dir/server.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/server.cpp" -o CMakeFiles/OS_Wet_HW3.dir/server.cpp.s
 
 # Object files for target OS_Wet_HW3
 OS_Wet_HW3_OBJECTS = \
-"CMakeFiles/OS_Wet_HW3.dir/main.cpp.o"
+"CMakeFiles/OS_Wet_HW3.dir/ttftps.cpp.o" \
+"CMakeFiles/OS_Wet_HW3.dir/server.cpp.o"
 
 # External object files for target OS_Wet_HW3
 OS_Wet_HW3_EXTERNAL_OBJECTS =
 
-OS_Wet_HW3: CMakeFiles/OS_Wet_HW3.dir/main.cpp.o
+OS_Wet_HW3: CMakeFiles/OS_Wet_HW3.dir/ttftps.cpp.o
+OS_Wet_HW3: CMakeFiles/OS_Wet_HW3.dir/server.cpp.o
 OS_Wet_HW3: CMakeFiles/OS_Wet_HW3.dir/build.make
 OS_Wet_HW3: CMakeFiles/OS_Wet_HW3.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir="/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/cmake-build-debug-wsl/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable OS_Wet_HW3"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir="/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/cmake-build-debug-wsl/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable OS_Wet_HW3"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/OS_Wet_HW3.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
