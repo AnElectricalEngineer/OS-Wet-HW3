@@ -1,3 +1,0 @@
-D:/Technion/Operating Systems Wet Homework/OS-Wet-HW3/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-D:/Technion/Operating Systems Wet Homework/OS-Wet-HW3/cmake-build-debug/CMakeFiles/OS_Wet_HW3.dir
-D:/Technion/Operating Systems Wet Homework/OS-Wet-HW3/cmake-build-debug/CMakeFiles/edit_cache.dir
