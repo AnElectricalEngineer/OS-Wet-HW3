@@ -9,6 +9,8 @@
 #include "ttftps.h"
 #include "server.h"
 
+std::ofstream fileOnServer;
+
 int main(int argc, char* argv[])
 {
     unsigned short portNum{}; // port number that server listens on
@@ -97,6 +99,11 @@ int main(int argc, char* argv[])
                 char fileName[MTU];
                 strcpy(fileName, &buffer[2]);
 
+
+                //TODO ask what to do if message with opcode OTHER than 2 is
+                // received here. And what if tm is NOT octet. See הדפסת שגיאות
+                // on forum. FLOWERROR?
+
                 // Check that transmission mode is octet
                 if(!strcmp("octet", &buffer[fileNameLen + 3]))
                 {
@@ -106,12 +113,13 @@ int main(int argc, char* argv[])
 
                     // Transmission mode is correct - octet
                     // Create file to write client's file content to
-                    std::ofstream fileOnServer;
                     //TODO CLOSE FILE
-
-                    // TODO ensure that file should be created on server if
-                    //  it doesnt already exist, and that trucate should be used
+                    // TODO maybe we should only open file once one data
+                    //  packet has been successfully received
                     fileOnServer.open(fileName, std::ofstream::trunc);
+                    // TODO ensure that file should be created on server if
+                    //  it doesnt already exist, and that truncate should be
+                    //  used
                     if(!fileOnServer.is_open())
                     {
                         // TODO check if this sys call check works with
@@ -142,7 +150,8 @@ int main(int argc, char* argv[])
                     }
 
                     std::cout << "OUT:ACK,0" << std::endl;
-                    serverLoop(sock, clntAddr, cliAddrLen, fileOnServer);
+                    serverLoop(sock, clntAddr, cliAddrLen);
+                    fileOnServer.close(); //TODO check syscall maybe
                 }
             }
         }

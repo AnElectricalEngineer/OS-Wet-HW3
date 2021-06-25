@@ -3,12 +3,15 @@
 #include <cstdio>
 #include <netinet/in.h>
 #include <iostream>
+#include <fstream>
 
 #include "server.h"
 #include "ttftps.h"
 
+extern std::ofstream fileOnServer;
+
 void serverLoop(int sockFd, struct sockaddr_in clntAddr, unsigned int
-cliAddrLen, std::ofstream& fileOnServer)
+cliAddrLen)
 {
     const int WAIT_FOR_PACKET_TIMEOUT = 3;
     const int NUMBER_OF_FAILURES = 7;
@@ -98,6 +101,7 @@ cliAddrLen, std::ofstream& fileOnServer)
                 if (timeoutExpiredCount>= NUMBER_OF_FAILURES)
                 {
                     // FATAL ERROR BAIL OUT
+                    std::cout << "RECVFAIL" << std::endl;
                     std::cout << "FLOWERROR:number of failures has exceeded "
                     << NUMBER_OF_FAILURES << " exiting..." << std::endl;
                     // TODO check if this is how we should zonaich process
@@ -109,6 +113,7 @@ cliAddrLen, std::ofstream& fileOnServer)
             if (opcode != 3) // TODO: We got something else but DATA
             {
                 // FATAL ERROR BAIL OUT
+                std::cout << "RECVFAIL" << std::endl;
                 std::cout << "FLOWERROR:unexpected packet type received. " <<
                              "Exiting..." << std::endl;
                 // TODO check if this is how we should zonaich process
@@ -121,6 +126,7 @@ cliAddrLen, std::ofstream& fileOnServer)
                     // in DATA was wrong (not last ACK’s block number + 1)
             {
                 // FATAL ERROR BAIL OUT
+                std::cout << "RECVFAIL" << std::endl;
                 std::cout << "FLOWERROR:block number received does not match "
                              "last ACK's block number + 1. " <<
                           "Exiting..." << std::endl;
@@ -161,7 +167,11 @@ cliAddrLen, std::ofstream& fileOnServer)
         }
 
         std::cout << "OUT:ACK," << lastReceivedBlkNum << std::endl;
-    }while (recvMsgSize != MAX_PCKT_LEN); // Have blocks left to be read from client
-    // (not end of
-    // transmission)
+    }while (recvMsgSize == MAX_PCKT_LEN); // Have blocks left to be read
+    // from client (not end of transmission)
+
+    // Successful end of transmission - print message
+    std::cout << "RECVOK" << std::endl;
 }
+//TODO maybe after each RECVFAIL, we should return to main? currently we exit
+// process
