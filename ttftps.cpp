@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <cstring>
+#include <fstream>
 
 #include "ttftps.h"
 #include "server.h"
@@ -13,7 +14,7 @@ int main(int argc, char* argv[])
     unsigned short portNum{}; // port number that server listens on
 
     // Check number of command arguments
-    if(argc != 1)
+    if(argc != 2)
     {
         std::cerr << "Error: wrong number of arguments. Exiting..." <<
         std::endl;
@@ -23,7 +24,7 @@ int main(int argc, char* argv[])
     // Check that portNum is valid
     try
     {
-        portNum = std::stoi(argv[0]);
+        portNum = std::stoi(argv[1]);
     }
     catch(std::invalid_argument&)
     {
@@ -35,8 +36,8 @@ int main(int argc, char* argv[])
     struct sockaddr_in servAddr{0};  /* Local address */
     struct sockaddr_in clntAddr{0};  /* Client address */
     unsigned int cliAddrLen;         /* Length of client address */
-    char buffer[MTU];                /* Buffer for packets */
-    int recvMsgSize;                 /* Size of received message */
+    char buffer[MTU] = {0};          /* Buffer for packets */
+    ssize_t recvMsgSize;             /* Size of received message */
 
     /* Create socket for sending/receiving datagrams */
     sock = socket(AF_INET, SOCK_DGRAM, 0);
@@ -57,40 +58,96 @@ int main(int argc, char* argv[])
     while(true)
     {
         cliAddrLen = sizeof(clntAddr);
+
+        // Try to receive WRQ from client
         recvMsgSize = recvfrom(sock, buffer, MTU, 0, (struct sockaddr*)
                 &clntAddr, &cliAddrLen);
 
         SYS_CALL_CHECK(recvMsgSize);
 
-        if(recvMsgSize >= 2)
+        // Check if opcode of message matches WRQ
+        // TODO ask about using ntohs here!
+        unsigned short opcodeLeftByte = (unsigned short)buffer[0];
+        unsigned short opcodeRightByte = (unsigned short)buffer[1];
+
+        unsigned short opcode = (((unsigned short)buffer[0]) << 8) | buffer[1];
+        opcode = ntohs(opcode);
+        std::cout << "test opcode is: " << opcode << std::endl;
+
+        // opcode is WRQ opcode
+        // TODO ask what to do if any field of WRQ is incorrect
+        if(opcodeLeftByte == 0 && opcodeRightByte == 2)
         {
-            // Check if opcode of message matches WRQ
-            // TODO check if this is how messages are arranged
-            if(buffer[0] == 0 && buffer[1] == 2)
+            // TODO delete comment lior said that we need to check that the
+            //  structure of WRQ is what we expect it to be.
+
+            // Check that received message contains two null terminators
+            int nullTermCount{0};
+            for(int i = 2; i < recvMsgSize; ++i)
             {
-                //TODO check if we can assume that WRQ are always correct
-                int fileNameLen = strlen(&buffer[2]);
-                char fileName[fileNameLen + 1];
+                if(buffer[i] == '\0')
+                {
+                    nullTermCount++;
+                }
+            }
+
+            // Number of null terminators in message received is exactly 2
+            if(nullTermCount == 2)
+            {
+                // Save file name
+                auto fileNameLen = strlen(&buffer[2]);
+                char fileName[MTU];
                 strcpy(fileName, &buffer[2]);
 
-                //TODO check if mode is always one byte, or what
-                int modeLen = strlen(&buffer[fileNameLen + 3]);
-                char mode[modeLen + 1];
-                strcpy(mode, &buffer[fileNameLen + 3]);
+                // Check that transmission mode is octet
+                if(!strcmp("octet", &buffer[fileNameLen + 3]))
+                {
+                    // Message is a WRQ so print proper message
+                    std::cout << "IN:WRQ," << fileName << "," << OCTET <<
+                    std::endl;
 
-                std::string fileNameString = fileName;
-                std::string modeString = mode;
+                    // Transmission mode is correct - octet
+                    // Create file to write client's file content to
+                    std::ofstream fileOnServer;
 
-                WRQ wrqMessage{};
-                wrqMessage.fileName = fileNameString;
-                wrqMessage.mode = mode;
+                    // TODO ensure that file should be created on server if
+                    //  it doesnt already exist, and that trucate should be used
+                    fileOnServer.open(fileName, std::ofstream::trunc);
+                    if(!fileOnServer.is_open())
+                    {
+                        // TODO check if this sys call check works with
+                        //  std::open
+                        perror("TTFTP_ERROR");
+                        //std::cerr << "TTFTP_ERROR" << std::endl;
+                        exit(-1);
+                    }
 
-                std::cout << "IN:WRQ,"
-                //TODO stopped here
+                    // Create and send ack (0) to ack WRQ
+                    ACK ack0;
+                    ack0.opcode = htons(ACK_OPCODE);
+                    ack0.blockNum = htons(0);
+
+                    auto ackBytesSent = sendto(sock, &ack0, ACK_LENGTH, 0,
+                                               (struct sockaddr*) &clntAddr,
+                                                       cliAddrLen);
+
+                    // Ensure that entire ACK0 for WRQ was successfully sent
+                    // TODO check if there is some other error that should be
+                    //  printed here instead of just syscall error. Maybe use
+                    //  retvalue < 0 to check syscall, and separately check
+                    //  num of bytes sent. Check this for ALL ack sends.
+                    if(ackBytesSent != ACK_LENGTH)
+                    {
+                        perror("TTFTP_ERROR");
+                        exit(-1);
+                    }
+
+                    std::cout << "OUT:ACK,0" << std::endl;
+                    std::ofstream* filePtr = &fileOnServer;
+                    serverLoop(sock, clntAddr, cliAddrLen, filePtr);
+                }
             }
         }
-
-        serverLoop(sock);
     }
 
     return 0;

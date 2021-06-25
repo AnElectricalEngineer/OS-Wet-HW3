@@ -4,11 +4,16 @@
 #include <string>
 
 #define MTU 1500
+#define WRQ_OPCODE 2
+#define ACK_OPCODE 4
+#define DATA_OPCODE 3
+#define ACK_LENGTH 4 // length of ack message in bytes
+#define OCTET "octet"
 
 // TODO check
 // Macro to check system call success
 #define SYS_CALL_CHECK(f) do {          \
-    int e = f;                          \
+    auto e = f;                         \
     if (e < 0) {                        \
         perror("TTFTP_ERROR");          \
         exit(-1);                       \
@@ -16,12 +21,12 @@
 } while (0)
 
 // TODO check if works
-// TODO ask lior why it's important
-typedef struct wrq
+typedef struct ack
 {
-    std::string fileName;
-    std::string mode;
-} __attribute__((packed)) WRQ;
+    unsigned short opcode;
+    unsigned short blockNum;
+} __attribute__((packed)) ACK;
+
 
 
 #endif //_TTFTPS_H
