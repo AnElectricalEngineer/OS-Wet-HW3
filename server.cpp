@@ -8,7 +8,7 @@
 #include "ttftps.h"
 
 void serverLoop(int sockFd, struct sockaddr_in clntAddr, unsigned int
-cliAddrLen, std::ofstream* fileOnServer)
+cliAddrLen, std::ofstream& fileOnServer)
 {
     const int WAIT_FOR_PACKET_TIMEOUT = 3;
     const int NUMBER_OF_FAILURES = 7;
@@ -17,6 +17,8 @@ cliAddrLen, std::ofstream* fileOnServer)
     char buffer[MAX_PCKT_LEN] = {0};
     unsigned int timeoutExpiredCount{0};
     unsigned short lastReceivedBlkNum{0};
+    unsigned short blockNum{0};
+    unsigned short opcode{0};
     ssize_t recvMsgSize{0}; /* Size of received message */
 
     fd_set readFds;
@@ -54,16 +56,16 @@ cliAddrLen, std::ofstream* fileOnServer)
                     sockaddr*)&clntAddr, &cliAddrLen);
                     SYS_CALL_CHECK(recvMsgSize);
 
-                    // Check if opcode of message matches Data packet style
-                    // TODO ask about using ntohs here!
-                    unsigned short opcodeLeftByte = (unsigned short)buffer[0];
-                    unsigned short opcodeRightByte = (unsigned short)buffer[1];
+                    // TODO ask lior when to use ntohs. This works, but switching indexes
+                    //  of buffers and using ntohs also works.
+                    opcode = (((unsigned short)buffer[0]) << 8) | buffer[1];
+                    //opcode = ntohs(opcode);
 
-                    //opcode is Data opcode
-                    if(opcodeLeftByte == 0 && opcodeRightByte == 3)
-                    {
-
-                    }
+                    // TODO ask lior when to use ntohs. This works, but switching indexes
+                    //  of buffers and using ntohs also works.
+                    blockNum = (((unsigned short)buffer[2])
+                            << 8) | buffer[3];
+                    //opcode = ntohs(opcode);
                 }
 
                 //Time out expired while waiting for data to appear at the
@@ -104,19 +106,62 @@ cliAddrLen, std::ofstream* fileOnServer)
                 // TODO check that this (recvMsgSize == 0) is correct
             }while (recvMsgSize == 0); // TODO: Continue while some socket was
                 // ready but recvfrom failed to read the data (ret 0)
-            if (...) // TODO: We got something else but DATA
+            if (opcode != 3) // TODO: We got something else but DATA
             {
                 // FATAL ERROR BAIL OUT
+                std::cout << "FLOWERROR:unexpected packet type received. " <<
+                             "Exiting..." << std::endl;
+                // TODO check if this is how we should zonaich process
+                exit(-3);
             }
-            if (...) // TODO: The incoming block number is not what we have
+            if (blockNum != lastReceivedBlkNum + 1) // TODO: The incoming block
+                // number is not what
+                // we have
                     // expected, i.e. this is a DATA pkt but the block number
                     // in DATA was wrong (not last ACK’s block number + 1)
             {
                 // FATAL ERROR BAIL OUT
+                std::cout << "FLOWERROR:block number received does not match "
+                             "last ACK's block number + 1. " <<
+                          "Exiting..." << std::endl;
+                // TODO check if this is how we should zonaich process
+                exit(-4);
             }
-        }while (FALSE);
+        }while (false);
         timeoutExpiredCount = 0;
-        lastWriteSize = fwrite(...); // write next bulk of data
+
+        // Packet is correct, Data packet - print message
+        lastReceivedBlkNum = blockNum;
+        std::cout << "IN:DATA, " << blockNum << "," << recvMsgSize << std::endl;
+
+        // Write packet to file on server and print message
+        fileOnServer.write(buffer + 4, recvMsgSize - 4); // TODO check that
+        // this syscall succeeded
+
+        // TODO - here we printed number of bytes that we INTENDED to write,
+        //  NOT how many were actually written. Ask Lior if ok.
+        std::cout << "WRITING: " << recvMsgSize - 4 << std::endl;
+
+        //lastWriteSize = fwrite(...); // write next bulk of data
         // TODO: send ACK packet to the client
-    }while (...); // Have blocks left to be read from client (not end of transmission)
+
+        // Create and send ack
+        ACK ack;
+        ack.opcode = htons(ACK_OPCODE);
+        ack.blockNum = htons(lastReceivedBlkNum);
+
+        auto ackBytesSent = sendto(sockFd, &ack, ACK_LENGTH, 0,
+                                   (struct sockaddr*) &clntAddr,
+                                   cliAddrLen);
+        // Ensure that entire ACK was successfully sent
+        if(ackBytesSent != ACK_LENGTH)
+        {
+            perror("TTFTP_ERROR");
+            exit(-1);
+        }
+
+        std::cout << "OUT:ACK," << lastReceivedBlkNum << std::endl;
+    }while (recvMsgSize != MAX_PCKT_LEN); // Have blocks left to be read from client
+    // (not end of
+    // transmission)
 }

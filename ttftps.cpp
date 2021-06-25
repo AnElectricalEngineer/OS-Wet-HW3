@@ -66,17 +66,15 @@ int main(int argc, char* argv[])
         SYS_CALL_CHECK(recvMsgSize);
 
         // Check if opcode of message matches WRQ
-        // TODO ask about using ntohs here!
-        unsigned short opcodeLeftByte = (unsigned short)buffer[0];
-        unsigned short opcodeRightByte = (unsigned short)buffer[1];
 
+        // TODO ask lior when to use ntohs. This works, but switching indexes
+        //  of buffers and using ntohs also works.
         unsigned short opcode = (((unsigned short)buffer[0]) << 8) | buffer[1];
-        opcode = ntohs(opcode);
-        std::cout << "test opcode is: " << opcode << std::endl;
+        //opcode = ntohs(opcode);
 
         // opcode is WRQ opcode
         // TODO ask what to do if any field of WRQ is incorrect
-        if(opcodeLeftByte == 0 && opcodeRightByte == 2)
+        if(opcode == 2)
         {
             // TODO delete comment lior said that we need to check that the
             //  structure of WRQ is what we expect it to be.
@@ -109,6 +107,7 @@ int main(int argc, char* argv[])
                     // Transmission mode is correct - octet
                     // Create file to write client's file content to
                     std::ofstream fileOnServer;
+                    //TODO CLOSE FILE
 
                     // TODO ensure that file should be created on server if
                     //  it doesnt already exist, and that trucate should be used
@@ -143,8 +142,7 @@ int main(int argc, char* argv[])
                     }
 
                     std::cout << "OUT:ACK,0" << std::endl;
-                    std::ofstream* filePtr = &fileOnServer;
-                    serverLoop(sock, clntAddr, cliAddrLen, filePtr);
+                    serverLoop(sock, clntAddr, cliAddrLen, fileOnServer);
                 }
             }
         }
