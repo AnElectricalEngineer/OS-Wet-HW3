@@ -175,3 +175,7 @@ cliAddrLen)
 }
 //TODO maybe after each RECVFAIL, we should return to main? currently we exit
 // process
+
+
+//TODO maybe add ability for client to choose name of file to be created on
+// server - see tftp 'man' - see if exercise says anything about it
