@@ -34,6 +34,15 @@ int main(int argc, char* argv[])
         exit(-1);
     }
 
+    //TODO I think change line 16 to int, because stoi returns int,
+    // and then afterwards, check that value is >=0 and <= 65,535. If so,
+    // then do unsigned short portNum = (short)value-returned-by-stoi.
+
+    //TODO then check that port nums such as: something smaller than
+    // smallest int, something bigger than biggest int all fail. Then check
+    // that port nums outside of UNSIGNED SHORT range also fail: less than 0,
+    // and greater than 65,535.
+
     int sock;                        /* Socket */
     struct sockaddr_in servAddr{0};  /* Local address */
     struct sockaddr_in clntAddr{0};  /* Client address */

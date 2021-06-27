@@ -41,11 +41,9 @@ cliAddrLen)
                 FD_SET(sockFd, &readFds);
 
                 // Returns 0 if timeout was reached and no message was read
-                readyToRead = select(sockFd + 1, &readFds, nullptr, nullptr,
-                                     &timeout);
-
-                // TODO ask lior if need to check sys call here because it
-                //  wasn't in sheled
+                readyToRead = select(sockFd + 1, &readFds, nullptr,
+                                     nullptr, &timeout);
+                
                 SYS_CALL_CHECK(readyToRead);
 
                 // If there was something at the socket and we are here not
@@ -55,8 +53,9 @@ cliAddrLen)
                     // Read the DATA packet from the socket (at least we hope
                     // this is a DATA packet)
 
-                    recvMsgSize = recvfrom(sockFd, buffer, MAX_PCKT_LEN, 0, (struct
-                    sockaddr*)&clntAddr, &cliAddrLen);
+                    recvMsgSize = recvfrom(sockFd, buffer, MAX_PCKT_LEN, 0,
+                                           (struct sockaddr*)&clntAddr,
+                                                   &cliAddrLen);
                     SYS_CALL_CHECK(recvMsgSize);
 
                     // TODO ask lior when to use ntohs. This works, but switching indexes
@@ -176,6 +175,25 @@ cliAddrLen)
 //TODO maybe after each RECVFAIL, we should return to main? currently we exit
 // process
 
+//TODO IMPORTANT IMPORTANT IMPORTANT - see last bullet on page 7. Currently,
+// I think after each type of transmission failure, when we 'zonaich' the
+// process, we exit. THIS IS WRONG, and server should start waiting for WRQ
+// from next customer.
+
+//TODO (try to) ensure that above case is tested. That is, test each possible
+// reason that can cause 'znicha' and ensure that server is able to get next
+// request.
 
 //TODO maybe add ability for client to choose name of file to be created on
 // server - see tftp 'man' - see if exercise says anything about it
+
+//TODO test cases where file size divides evenly by 512 bytes, AND doesn't
+// divide evenly by 512 bytes. In first case, it's ok if EITHER:
+// A: server prints IN DATA and WRITING messages for packet with 0 data bytes
+// received, and then ACK, or just ACK. TEST THAT ONE OF THESE OCCURS. (Ofc
+// at the end of either one of these, RECVOK should be printed.
+
+//TODO test that after successful transmission, server is still listening,
+// and can perform additional transfers
+
+//TODO valgrind - I want to - not required
