@@ -80,8 +80,13 @@ int main(int argc, char* argv[])
 
         // TODO ask lior when to use ntohs. This works, but switching indexes
         //  of buffers and using ntohs also works.
-        unsigned short opcode = (((unsigned short)buffer[0]) << 8) | buffer[1];
+//        unsigned short opcode = (((unsigned short)buffer[0]) << 8) | buffer[1];
         //opcode = ntohs(opcode);
+
+        //TODO show keren changes - works!
+        uint16_t val;
+        memcpy(&val, buffer, sizeof(uint16_t));
+        uint16_t opcode = ntohs(val);
 
         // opcode is WRQ opcode
         // TODO ask what to do if any field of WRQ is incorrect

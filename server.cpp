@@ -43,7 +43,7 @@ cliAddrLen)
                 // Returns 0 if timeout was reached and no message was read
                 readyToRead = select(sockFd + 1, &readFds, nullptr,
                                      nullptr, &timeout);
-                
+
                 SYS_CALL_CHECK(readyToRead);
 
                 // If there was something at the socket and we are here not
