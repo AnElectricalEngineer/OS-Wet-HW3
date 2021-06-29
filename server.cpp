@@ -1,8 +1,8 @@
 #include <cstdlib>
-#include <ctime>
 #include <cstdio>
 #include <netinet/in.h>
 #include <iostream>
+#include <cstring>
 #include <fstream>
 
 #include "server.h"
@@ -16,12 +16,11 @@ cliAddrLen)
     const int WAIT_FOR_PACKET_TIMEOUT = 3;
     const int NUMBER_OF_FAILURES = 7;
 
-    // TODO ask lior if we should mtu for data packets, like WRQ
     char buffer[MAX_PCKT_LEN] = {0};
     unsigned int timeoutExpiredCount{0};
-    unsigned short lastReceivedBlkNum{0};
-    unsigned short blockNum{0};
-    unsigned short opcode{0};
+    uint16_t lastReceivedBlkNum{0};
+    uint16_t blockNum;
+    uint16_t opcode;
     ssize_t recvMsgSize{0}; /* Size of received message */
 
     fd_set readFds;
@@ -58,23 +57,22 @@ cliAddrLen)
                                                    &cliAddrLen);
                     SYS_CALL_CHECK(recvMsgSize);
 
-                    // TODO ask lior when to use ntohs. This works, but switching indexes
-                    //  of buffers and using ntohs also works.
-                    opcode = (((unsigned short)buffer[0]) << 8) | buffer[1];
-                    //opcode = ntohs(opcode);
+                    // Get opcode from packet
+                    uint16_t tmpOpcode;
+                    memcpy(&tmpOpcode, buffer, sizeof(uint16_t));
+                    opcode = ntohs(tmpOpcode);
 
-                    // TODO ask lior when to use ntohs. This works, but switching indexes
-                    //  of buffers and using ntohs also works.
-                    blockNum = (((unsigned short)buffer[2])
-                            << 8) | buffer[3];
-                    //opcode = ntohs(opcode);
+                    // Get block number from packet
+                    uint16_t tmpBlockNum;
+                    memcpy(&tmpBlockNum, buffer + 2, sizeof(uint16_t));
+                    blockNum = ntohs(tmpBlockNum);
                 }
 
                 //Time out expired while waiting for data to appear at the
                 // socket
                 if(readyToRead == 0)
                 {
-                    //TODO: Send another ACK for the last packet
+                    // Send another ACK for the last packet
                     timeoutExpiredCount++;
 
                     std::cout << "FLOWERROR:number of timeouts is: "
@@ -88,49 +86,42 @@ cliAddrLen)
                     auto ackBytesSent = sendto(sockFd, &ack, ACK_LENGTH, 0,
                                                (struct sockaddr*) &clntAddr,
                                                        cliAddrLen);
-                    // Ensure that entire ACK was successfully sent
-                    if(ackBytesSent != ACK_LENGTH)
-                    {
-                        perror("TTFTP_ERROR");
-                        exit(-1);
-                    }
-
+                    SYS_CALL_CHECK(ackBytesSent);
                     std::cout << "OUT:ACK," << lastReceivedBlkNum << std::endl;
                 }
-                if (timeoutExpiredCount>= NUMBER_OF_FAILURES)
+                if (timeoutExpiredCount >= NUMBER_OF_FAILURES)
                 {
                     // FATAL ERROR BAIL OUT
                     std::cout << "RECVFAIL" << std::endl;
                     std::cout << "FLOWERROR:number of failures has exceeded "
                     << NUMBER_OF_FAILURES << " exiting..." << std::endl;
-                    // TODO check if this is how we should zonaich process
-                    exit(-2);
+                    // TODO test that return here works
+                    return;
                 }
-                // TODO check that this (recvMsgSize == 0) is correct
-            }while (recvMsgSize == 0); // TODO: Continue while some socket was
+                // check that this (recvMsgSize == 0) is correct
+            }while (recvMsgSize == 0); // Continue while some socket was
                 // ready but recvfrom failed to read the data (ret 0)
-            if (opcode != 3) // TODO: We got something else but DATA
+            if (opcode != DATA_OPCODE) // We got something else but DATA
             {
                 // FATAL ERROR BAIL OUT
                 std::cout << "RECVFAIL" << std::endl;
                 std::cout << "FLOWERROR:unexpected packet type received. " <<
                              "Exiting..." << std::endl;
-                // TODO check if this is how we should zonaich process
-                exit(-3);
+                // TODO test this return
+                return;
             }
-            if (blockNum != lastReceivedBlkNum + 1) // TODO: The incoming block
-                // number is not what
-                // we have
-                    // expected, i.e. this is a DATA pkt but the block number
-                    // in DATA was wrong (not last ACK’s block number + 1)
+            if (blockNum != lastReceivedBlkNum + 1) // The incoming block
+                // number is not what we have expected, i.e. this is a DATA
+                // pkt but the block number in DATA was wrong (not last ACK’s
+                // block number + 1)
             {
                 // FATAL ERROR BAIL OUT
                 std::cout << "RECVFAIL" << std::endl;
                 std::cout << "FLOWERROR:block number received does not match "
                              "last ACK's block number + 1. " <<
                           "Exiting..." << std::endl;
-                // TODO check if this is how we should zonaich process
-                exit(-4);
+                // TODO test this - that server starts waiting again for WRQ
+                return;
             }
         }while (false);
         timeoutExpiredCount = 0;
@@ -148,7 +139,7 @@ cliAddrLen)
         std::cout << "WRITING: " << recvMsgSize - 4 << std::endl;
 
         //lastWriteSize = fwrite(...); // write next bulk of data
-        // TODO: send ACK packet to the client
+        // send ACK packet to the client
 
         // Create and send ack
         ACK ack;
@@ -158,13 +149,7 @@ cliAddrLen)
         auto ackBytesSent = sendto(sockFd, &ack, ACK_LENGTH, 0,
                                    (struct sockaddr*) &clntAddr,
                                    cliAddrLen);
-        // Ensure that entire ACK was successfully sent
-        if(ackBytesSent != ACK_LENGTH)
-        {
-            perror("TTFTP_ERROR");
-            exit(-1);
-        }
-
+        SYS_CALL_CHECK(ackBytesSent);
         std::cout << "OUT:ACK," << lastReceivedBlkNum << std::endl;
     }while (recvMsgSize == MAX_PCKT_LEN); // Have blocks left to be read
     // from client (not end of transmission)
@@ -172,28 +157,12 @@ cliAddrLen)
     // Successful end of transmission - print message
     std::cout << "RECVOK" << std::endl;
 }
-//TODO maybe after each RECVFAIL, we should return to main? currently we exit
-// process
 
-//TODO IMPORTANT IMPORTANT IMPORTANT - see last bullet on page 7. Currently,
-// I think after each type of transmission failure, when we 'zonaich' the
-// process, we exit. THIS IS WRONG, and server should start waiting for WRQ
-// from next customer.
-
-//TODO (try to) ensure that above case is tested. That is, test each possible
+//TODO  test each possible
 // reason that can cause 'znicha' and ensure that server is able to get next
 // request.
 
-//TODO maybe add ability for client to choose name of file to be created on
-// server - see tftp 'man' - see if exercise says anything about it
+// TODO implement + test that if process of sending failed before single char
+//  was written - delete file created on server.
 
-//TODO test cases where file size divides evenly by 512 bytes, AND doesn't
-// divide evenly by 512 bytes. In first case, it's ok if EITHER:
-// A: server prints IN DATA and WRITING messages for packet with 0 data bytes
-// received, and then ACK, or just ACK. TEST THAT ONE OF THESE OCCURS. (Ofc
-// at the end of either one of these, RECVOK should be printed.
-
-//TODO test that after successful transmission, server is still listening,
-// and can perform additional transfers
-
-//TODO valgrind - I want to - not required
+// TODO valgrind - I want to - not required

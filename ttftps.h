@@ -20,11 +20,10 @@
     }                                   \
 } while (0)
 
-// TODO check if works
 typedef struct ack
 {
-    unsigned short opcode;
-    unsigned short blockNum;
+    uint16_t opcode;
+    uint16_t blockNum;
 } __attribute__((packed)) ACK;
 
 

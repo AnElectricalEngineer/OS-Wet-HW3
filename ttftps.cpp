@@ -5,6 +5,7 @@
 #include <netdb.h>
 #include <cstring>
 #include <fstream>
+#include <climits>
 
 #include "ttftps.h"
 #include "server.h"
@@ -13,7 +14,8 @@ std::ofstream fileOnServer;
 
 int main(int argc, char* argv[])
 {
-    unsigned short portNum{}; // port number that server listens on
+    int tmpPortNum; // port number that server listens on
+    uint16_t portNum;
 
     // Check number of command arguments
     if(argc != 2)
@@ -23,10 +25,10 @@ int main(int argc, char* argv[])
         exit(-1);
     }
 
-    // Check that portNum is valid
+    // Check that portNum is a number
     try
     {
-        portNum = std::stoi(argv[1]);
+        tmpPortNum = std::stoi(argv[1]);
     }
     catch(std::invalid_argument&)
     {
@@ -34,14 +36,14 @@ int main(int argc, char* argv[])
         exit(-1);
     }
 
-    //TODO I think change line 16 to int, because stoi returns int,
-    // and then afterwards, check that value is >=0 and <= 65,535. If so,
-    // then do unsigned short portNum = (short)value-returned-by-stoi.
+    // Check that received port num is valid port num
+    if(tmpPortNum < 0 || tmpPortNum > USHRT_MAX)
+    {
+        std::cerr << "Error: bad port number. Exiting..." << std::endl;
+        exit(-1);
+    }
 
-    //TODO then check that port nums such as: something smaller than
-    // smallest int, something bigger than biggest int all fail. Then check
-    // that port nums outside of UNSIGNED SHORT range also fail: less than 0,
-    // and greater than 65,535.
+    portNum = static_cast<uint16_t>(tmpPortNum);
 
     int sock;                        /* Socket */
     struct sockaddr_in servAddr{0};  /* Local address */
@@ -68,6 +70,9 @@ int main(int argc, char* argv[])
 
     while(true)
     {
+        bool isValidWRQ{false};
+        bool isModeOctet{false};
+
         cliAddrLen = sizeof(clntAddr);
 
         // Try to receive WRQ from client
@@ -77,24 +82,13 @@ int main(int argc, char* argv[])
         SYS_CALL_CHECK(recvMsgSize);
 
         // Check if opcode of message matches WRQ
-
-        // TODO ask lior when to use ntohs. This works, but switching indexes
-        //  of buffers and using ntohs also works.
-//        unsigned short opcode = (((unsigned short)buffer[0]) << 8) | buffer[1];
-        //opcode = ntohs(opcode);
-
-        //TODO show keren changes - works!
-        uint16_t val;
-        memcpy(&val, buffer, sizeof(uint16_t));
-        uint16_t opcode = ntohs(val);
+        uint16_t tmpOpcode;
+        memcpy(&tmpOpcode, buffer, sizeof(uint16_t));
+        uint16_t opcode = ntohs(tmpOpcode);
 
         // opcode is WRQ opcode
-        // TODO ask what to do if any field of WRQ is incorrect
-        if(opcode == 2)
+        if(opcode == WRQ_OPCODE)
         {
-            // TODO delete comment lior said that we need to check that the
-            //  structure of WRQ is what we expect it to be.
-
             // Check that received message contains two null terminators
             int nullTermCount{0};
             for(int i = 2; i < recvMsgSize; ++i)
@@ -108,68 +102,67 @@ int main(int argc, char* argv[])
             // Number of null terminators in message received is exactly 2
             if(nullTermCount == 2)
             {
-                // Save file name
+                //TODO ensure that file is opened in proper place, and
+                // deleted in certain cases, eg file doesn't exist on client
                 auto fileNameLen = strlen(&buffer[2]);
-                char fileName[MTU];
-                strcpy(fileName, &buffer[2]);
 
-
-                //TODO ask what to do if message with opcode OTHER than 2 is
-                // received here. And what if tm is NOT octet. See הדפסת שגיאות
-                // on forum. FLOWERROR?
-
-                // Check that transmission mode is octet
-                if(!strcmp("octet", &buffer[fileNameLen + 3]))
+                // Check that file name is valid string with length > 0
+                if(fileNameLen > 0)
                 {
-                    // Message is a WRQ so print proper message
+                    isValidWRQ = true;
+
+                    // Save file name
+                    char fileName[MTU];
+                    strcpy(fileName, &buffer[2]);
+
                     std::cout << "IN:WRQ," << fileName << "," << OCTET <<
-                    std::endl;
+                              std::endl;
 
-                    // Transmission mode is correct - octet
-                    // Create file to write client's file content to
-                    //TODO CLOSE FILE
-                    // TODO maybe we should only open file once one data
-                    //  packet has been successfully received
-                    fileOnServer.open(fileName, std::ofstream::trunc);
-                    // TODO ensure that file should be created on server if
-                    //  it doesnt already exist, and that truncate should be
-                    //  used
-                    if(!fileOnServer.is_open())
+                    // Check that transmission mode is octet
+                    if(!strcmp("octet", &buffer[fileNameLen + 3]))
                     {
-                        // TODO check if this sys call check works with
-                        //  std::open
-                        perror("TTFTP_ERROR");
-                        //std::cerr << "TTFTP_ERROR" << std::endl;
-                        exit(-1);
+                        // Transmission mode is correct - octet
+                        isModeOctet = true;
+
+                        // Create file to write client's file content to
+                        //TODO CLOSE FILE
+                        // TODO maybe we should only open file once one data
+                        //  packet has been successfully received
+                        fileOnServer.open(fileName, std::ofstream::trunc |
+                        std::ofstream::binary);
+
+                        // Create and send ack (0) to ack WRQ
+                        ACK ack0;
+                        ack0.opcode = htons(ACK_OPCODE);
+                        ack0.blockNum = htons(0);
+
+                        auto ackBytesSent = sendto(sock, &ack0, ACK_LENGTH, 0,
+                                                   (struct sockaddr*) &clntAddr,
+                                                   cliAddrLen);
+                        SYS_CALL_CHECK(ackBytesSent);
+                        std::cout << "OUT:ACK,0" << std::endl;
+
+                        serverLoop(sock, clntAddr, cliAddrLen);
+                        fileOnServer.close();
                     }
 
-                    // Create and send ack (0) to ack WRQ
-                    ACK ack0;
-                    ack0.opcode = htons(ACK_OPCODE);
-                    ack0.blockNum = htons(0);
-
-                    auto ackBytesSent = sendto(sock, &ack0, ACK_LENGTH, 0,
-                                               (struct sockaddr*) &clntAddr,
-                                                       cliAddrLen);
-
-                    // Ensure that entire ACK0 for WRQ was successfully sent
-                    // TODO check if there is some other error that should be
-                    //  printed here instead of just syscall error. Maybe use
-                    //  retvalue < 0 to check syscall, and separately check
-                    //  num of bytes sent. Check this for ALL ack sends.
-                    if(ackBytesSent != ACK_LENGTH)
+                    // Mode is not octet
+                    else
                     {
-                        perror("TTFTP_ERROR");
-                        exit(-1);
+                        isModeOctet = false;
                     }
-
-                    std::cout << "OUT:ACK,0" << std::endl;
-                    serverLoop(sock, clntAddr, cliAddrLen);
-                    fileOnServer.close(); //TODO check syscall maybe
                 }
             }
         }
-    }
 
+        //TODO if possible try to test all ifs above - all possible WRQ
+        // failures, see if below message was printed.
+
+        // Received message was NOT a valid WRQ for some reason
+        if(isValidWRQ == false || isModeOctet == false)
+        {
+            std::cout << "FLOWERROR:bad packet." << std::endl;
+        }
+    }
     return 0;
 }
