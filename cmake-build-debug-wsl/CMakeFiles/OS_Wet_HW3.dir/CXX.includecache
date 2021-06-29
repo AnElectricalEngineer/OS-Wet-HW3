@@ -6,26 +6,24 @@
 
 #IncludeRegexTransform: 
 
-/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/server.h
-
-/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/ttftps.cpp
-iostream
+/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/server.cpp
+cstdlib
+-
+cstdio
 -
 netinet/in.h
 -
-sys/types.h
--
-sys/socket.h
--
-netdb.h
+iostream
 -
 cstring
 -
 fstream
 -
+server.h
+/mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/server.h
 ttftps.h
 /mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/ttftps.h
-server.h
+
 /mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/server.h
 
 /mnt/d/Technion/Operating Systems Wet Homework/OS-Wet-HW3/ttftps.h

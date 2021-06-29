@@ -25,7 +25,6 @@ cliAddrLen)
 
     fd_set readFds;
     struct timeval timeout{0};
-    timeout.tv_sec = WAIT_FOR_PACKET_TIMEOUT;
     int readyToRead;
 
     do
@@ -34,10 +33,16 @@ cliAddrLen)
         {
             do
             {
+                recvMsgSize = 0;
+
                 // Wait WAIT_FOR_PACKET_TIMEOUT to see if something appears
                 // for us at the socket (we are waiting for DATA)
                 FD_ZERO(&readFds);
                 FD_SET(sockFd, &readFds);
+
+                // Zero the timeout each iteration - critical because select
+                // modifies value
+                timeout.tv_sec = WAIT_FOR_PACKET_TIMEOUT;
 
                 // Returns 0 if timeout was reached and no message was read
                 readyToRead = select(sockFd + 1, &readFds, nullptr,
@@ -58,9 +63,9 @@ cliAddrLen)
                     SYS_CALL_CHECK(recvMsgSize);
 
                     // Get opcode from packet
-                    uint16_t tmpOpcode;
-                    memcpy(&tmpOpcode, buffer, sizeof(uint16_t));
-                    opcode = ntohs(tmpOpcode);
+                    uint16_t tmpOpCode;
+                    memcpy(&tmpOpCode, buffer, sizeof(uint16_t));
+                    opcode = ntohs(tmpOpCode);
 
                     // Get block number from packet
                     uint16_t tmpBlockNum;
@@ -101,6 +106,7 @@ cliAddrLen)
                 // check that this (recvMsgSize == 0) is correct
             }while (recvMsgSize == 0); // Continue while some socket was
                 // ready but recvfrom failed to read the data (ret 0)
+
             if (opcode != DATA_OPCODE) // We got something else but DATA
             {
                 // FATAL ERROR BAIL OUT
@@ -124,6 +130,8 @@ cliAddrLen)
                 return;
             }
         }while (false);
+
+        // We treat timeout count as per packet
         timeoutExpiredCount = 0;
 
         // Packet is correct, Data packet - print message
@@ -151,6 +159,7 @@ cliAddrLen)
                                    cliAddrLen);
         SYS_CALL_CHECK(ackBytesSent);
         std::cout << "OUT:ACK," << lastReceivedBlkNum << std::endl;
+
     }while (recvMsgSize == MAX_PCKT_LEN); // Have blocks left to be read
     // from client (not end of transmission)
 
