@@ -4,7 +4,7 @@
 
 #define MAX_PCKT_LEN 516 // Max packet length in bytes of data packet
 
-void serverLoop(int sockFd, struct sockaddr_in clntAddr, unsigned int
+int serverLoop(int sockFd, struct sockaddr_in clntAddr, unsigned int
         cliAddrLen);
 
 #endif //_SERVER_H

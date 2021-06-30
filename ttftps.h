@@ -10,7 +10,6 @@
 #define ACK_LENGTH 4 // length of ack message in bytes
 #define OCTET "octet"
 
-// TODO check
 // Macro to check system call success
 #define SYS_CALL_CHECK(f) do {          \
     auto e = f;                         \

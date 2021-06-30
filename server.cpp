@@ -10,7 +10,7 @@
 
 extern std::ofstream fileOnServer;
 
-void serverLoop(int sockFd, struct sockaddr_in clntAddr, unsigned int
+int serverLoop(int sockFd, struct sockaddr_in clntAddr, unsigned int
 cliAddrLen)
 {
     const int WAIT_FOR_PACKET_TIMEOUT = 3;
@@ -100,8 +100,7 @@ cliAddrLen)
                     std::cout << "RECVFAIL" << std::endl;
                     std::cout << "FLOWERROR:number of failures has exceeded "
                     << NUMBER_OF_FAILURES << " exiting..." << std::endl;
-                    // TODO test that return here works
-                    return;
+                    return -1;
                 }
                 // check that this (recvMsgSize == 0) is correct
             }while (recvMsgSize == 0); // Continue while some socket was
@@ -113,8 +112,7 @@ cliAddrLen)
                 std::cout << "RECVFAIL" << std::endl;
                 std::cout << "FLOWERROR:unexpected packet type received. " <<
                              "Exiting..." << std::endl;
-                // TODO test this return
-                return;
+                return -1;
             }
             if (blockNum != lastReceivedBlkNum + 1) // The incoming block
                 // number is not what we have expected, i.e. this is a DATA
@@ -126,8 +124,7 @@ cliAddrLen)
                 std::cout << "FLOWERROR:block number received does not match "
                              "last ACK's block number + 1. " <<
                           "Exiting..." << std::endl;
-                // TODO test this - that server starts waiting again for WRQ
-                return;
+                return -1;
             }
         }while (false);
 
@@ -139,11 +136,7 @@ cliAddrLen)
         std::cout << "IN:DATA, " << blockNum << "," << recvMsgSize << std::endl;
 
         // Write packet to file on server and print message
-        fileOnServer.write(buffer + 4, recvMsgSize - 4); // TODO check that
-        // this syscall succeeded
-
-        // TODO - here we printed number of bytes that we INTENDED to write,
-        //  NOT how many were actually written. Ask Lior if ok.
+        fileOnServer.write(buffer + 4, recvMsgSize - 4);
         std::cout << "WRITING: " << recvMsgSize - 4 << std::endl;
 
         //lastWriteSize = fwrite(...); // write next bulk of data
@@ -165,13 +158,6 @@ cliAddrLen)
 
     // Successful end of transmission - print message
     std::cout << "RECVOK" << std::endl;
+
+    return 0;
 }
-
-//TODO  test each possible
-// reason that can cause 'znicha' and ensure that server is able to get next
-// request.
-
-// TODO implement + test that if process of sending failed before single char
-//  was written - delete file created on server.
-
-// TODO valgrind - I want to - not required

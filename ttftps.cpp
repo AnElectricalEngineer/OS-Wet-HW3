@@ -102,8 +102,6 @@ int main(int argc, char* argv[])
             // Number of null terminators in message received is exactly 2
             if(nullTermCount == 2)
             {
-                //TODO ensure that file is opened in proper place, and
-                // deleted in certain cases, eg file doesn't exist on client
                 auto fileNameLen = strlen(&buffer[2]);
 
                 // Check that file name is valid string with length > 0
@@ -115,19 +113,20 @@ int main(int argc, char* argv[])
                     char fileName[MTU];
                     strcpy(fileName, &buffer[2]);
 
-                    std::cout << "IN:WRQ," << fileName << "," << OCTET <<
-                              std::endl;
+                    // Save mode
+                    char mode[MTU];
+                    strcpy(mode, &buffer[fileNameLen + 3]);
+
+                    std::cout << "IN:WRQ," << fileName << "," << mode <<
+                    std::endl;
 
                     // Check that transmission mode is octet
-                    if(!strcmp("octet", &buffer[fileNameLen + 3]))
+                    if(!strcmp("octet", mode))
                     {
                         // Transmission mode is correct - octet
                         isModeOctet = true;
 
                         // Create file to write client's file content to
-                        //TODO CLOSE FILE
-                        // TODO maybe we should only open file once one data
-                        //  packet has been successfully received
                         fileOnServer.open(fileName, std::ofstream::trunc |
                         std::ofstream::binary);
 
@@ -142,8 +141,15 @@ int main(int argc, char* argv[])
                         SYS_CALL_CHECK(ackBytesSent);
                         std::cout << "OUT:ACK,0" << std::endl;
 
-                        serverLoop(sock, clntAddr, cliAddrLen);
+                        int failedTransmission = serverLoop(sock, clntAddr,
+                                                     cliAddrLen);
                         fileOnServer.close();
+
+                        // Delete file if transmission failed
+                        if(failedTransmission)
+                        {
+                            std::remove(fileName);
+                        }
                     }
 
                     // Mode is not octet
@@ -154,9 +160,6 @@ int main(int argc, char* argv[])
                 }
             }
         }
-
-        //TODO if possible try to test all ifs above - all possible WRQ
-        // failures, see if below message was printed.
 
         // Received message was NOT a valid WRQ for some reason
         if(isValidWRQ == false || isModeOctet == false)
