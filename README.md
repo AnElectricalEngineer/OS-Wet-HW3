@@ -4,27 +4,16 @@ TTFTP (Trivial Trivial File Transfer Protocol Server) is a FTP server for GNU/Li
 
 ## About TTFTPS
 
-Bank is a multithreaded application written in C++ which uses the *pthreads* library. The bank is comprised of N ATMs - each with a unique ID number, and bank accounts. Each bank account has an account number, a PIN, and a balance. 
+TTFTPS is a FTP server written in C++ which implements a simplified version of the Trivial File Transfer Protocol (TFTP). As such, it uses UDP and supports only one simultaneous client. The TTFTP server supports transmission of octect packets (binary information packets that do not require translation) only, and not ASCII packets. The server utilizes sockets in order to connect to clients. For a full understanding of the logic of the server, see the attached PDF.
 
-## Using Bank
+## Using TTFTPS
 
-Bank should be run from the terminal by executing the following line (from within the directory containing the executable: `./Bank <Number of ATMs – N> <ATM_1_input_file> <ATM_2_input_file>…<ATM_N_input_file>`. Each ATM input file is a text file which contains commands that will be executed at the corresponding ATM (ATM_1_input_file corresponds to the first ATM). Example input file:
-```
-O 12345 1234 100
-W 12345 1234 50
-D 12345 1234 12
-O 12346 1234 45
-W 12345 1234 35
-```
-
-To see a list of all the possible input commands, see the attached PDF.
-
-The Bank will output to standard output the current bank status - a list of all the accounts with their balances and passwords, every half-second. In addition, the Bank will print to a logfile a record of all transactions conducted.
+To test the TTFTP server (on a single machine), open two terminals - one from the desired target directory for the file, and one from the directory which currently holds the file to be transferred. In the first terminal, run the TTFTP server by executing the command: `./ttftps <port_num>`, where port_num is the port that the server will listen on (if a permission denied error is received, ensure that the input port number is greater than or equal to 10,000). Then, in the second terminal, run the client by executing the following command: `./tftp <server_name> <server_port> S <file_name> [<dest_file_name>]`, where **server_name** is **local_host**, server_port is the same port number that was chosen when the server was run, S indicates sending, file_name is the name of the file to send, and dest_file_name is an optional field which sets the name of the file in the target directory. If a permission error is encountered, ensure that the client executable (tftp) has execute permissions.
 
 ## Screenshots
 
-![image](https://user-images.githubusercontent.com/47844685/130353266-da0ca478-d254-4346-98fa-fd2c27fbdd98.png)
-![image](https://user-images.githubusercontent.com/47844685/130353287-3cff55c3-fc7f-44ae-aa52-09ebcd3013a4.png)
+![image](https://user-images.githubusercontent.com/47844685/130356657-0b8dd514-e9ad-48f2-afaa-2893b634afd2.png)
+![image](https://user-images.githubusercontent.com/47844685/130356686-d0a712ea-c4e9-4514-9ea0-08c1e5e8d5cb.png)
 
 ## Build from source
 
