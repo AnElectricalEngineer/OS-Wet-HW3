@@ -1,6 +1,6 @@
 # TTFTPS
  
-TTFTP (Trivial Trivial File Transfer Protocol Server) is a FTP server for GNU/Linux operating systems.
+TTFTP (Trivial Trivial File Transfer Protocol Server) is an FTP server for GNU/Linux operating systems.
 
 ## About TTFTPS
 
